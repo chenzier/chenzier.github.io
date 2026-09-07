@@ -23,7 +23,7 @@
 }
 
 @utility max-w-app {
-  @apply max-w-3xl;
+  @apply max-w-4xl;
 }
 
 @utility app-layout {
@@ -38,33 +38,78 @@
   scroll-margin-block: 1rem;
 }
 
-/* ============================================================
-   文章页侧边目录（.post-with-toc）
-   桌面端两栏：左侧 13rem 目录 + 右侧内容；可收起（沉浸式阅读）
-   ============================================================ */
+/* Article reading layout and table of contents. */
 .toc-side {
   display: none;
 }
 
-/* 悬浮“目录”按钮：仅在目录收起时显示（由 JS 移除 hidden 属性控制） */
 .toc-reopen-btn {
+  display: none;
+}
+
+.toc-reopen-btn[hidden] {
   display: none;
 }
 
 @media (min-width: 1024px) {
   .post-with-toc {
-    max-width: 64rem;
+    max-width: 72rem;
     display: grid;
-    grid-template-columns: 13rem minmax(0, 1fr);
-    column-gap: 2.5rem;
+    grid-template-columns: 15rem minmax(0, 48rem);
+    column-gap: 3.5rem;
     align-items: start;
   }
 
   .toc-side {
     display: block;
+    position: sticky;
+    top: 2rem;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
-  /* 收起目录 = 沉浸式阅读：回到单栏版式 */
+  .toc-side > div {
+    border-inline-start-width: 1px;
+    border-inline-start-color: color-mix(
+      in srgb,
+      var(--accent) 35%,
+      var(--border)
+    );
+    padding-inline-start: 1.25rem;
+  }
+
+  .toc-side nav {
+    scrollbar-width: thin;
+  }
+
+  .toc-side a {
+    display: block;
+    border-inline-start: 2px solid transparent;
+    margin-inline-start: -1.375rem;
+    padding-inline-start: 1.125rem;
+    transition:
+      color 160ms ease,
+      border-color 160ms ease,
+      background-color 160ms ease;
+  }
+
+  .toc-side a:hover,
+  .toc-side a.text-accent {
+    border-inline-start-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 7%, transparent);
+  }
+
+  .toc-side a.ms-4 {
+    margin-inline-start: -1.375rem;
+    padding-inline-start: 1.875rem;
+  }
+
+  .toc-side a.ms-8 {
+    margin-inline-start: -1.375rem;
+    padding-inline-start: 2.625rem;
+  }
+
   .post-with-toc[data-toc="closed"] {
     max-width: 48rem;
     display: block;
@@ -76,5 +121,41 @@
 
   .toc-reopen-btn {
     display: flex;
+  }
+}
+
+.toc-mobile {
+  margin-block: 1.5rem 2rem;
+  border-block: 1px solid var(--border);
+}
+
+.toc-mobile summary {
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 0.75rem;
+  color: var(--accent);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.toc-mobile summary::after {
+  content: "+";
+  font-size: 1.25rem;
+  font-weight: 400;
+}
+
+.toc-mobile[open] summary::after {
+  content: "−";
+}
+
+.toc-mobile ol {
+  padding-block: 0 0.875rem;
+}
+
+@media (min-width: 1024px) {
+  .toc-mobile {
+    display: none;
   }
 }

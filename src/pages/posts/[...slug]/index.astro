@@ -86,10 +86,8 @@ const tocItems = (headings ?? [])
 let tocSeq = 0;
 const tocList = tocItems.map(item => ({
   ...item,
-  label:
-    item.depth === 2 ? `${++tocSeq}. ${item.text}` : item.text,
-  indent:
-    item.depth === 2 ? "" : item.depth === 3 ? "ms-4" : "ms-8",
+  label: item.depth === 2 ? `${++tocSeq}. ${item.text}` : item.text,
+  indent: item.depth === 2 ? "" : item.depth === 3 ? "ms-4" : "ms-8",
 }));
 const hasToc = tocList.length > 0;
 
@@ -137,42 +135,18 @@ const ogImage = ogImageUrl
     ]}
     data-toc="open"
   >
-    {hasToc && (
-      <aside aria-label="文章目录" class="toc-side">
-        <div class="border-border sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto border-s-2 ps-4 text-sm">
-          <div class="mb-1 flex items-center justify-between gap-2">
-            <a
-              id="back-button-toc"
-              href={getRelativeLocaleUrl(locale, "")}
-              class="focus-outline text-muted-foreground hover:text-foreground/75 -ms-1 inline-flex items-center gap-0.5"
-            >
-              <IconChevronLeft class="inline-block size-5 rtl:rotate-180" />
-              <span>{t.post.goBack}</span>
-            </a>
-            <button
-              type="button"
-              id="toc-collapse-btn"
-              class="focus-outline text-muted-foreground hover:text-accent grid size-6 shrink-0 place-items-center rounded border-none text-xs"
-              aria-label="收起目录"
-              title="收起目录"
-            >
-              <span aria-hidden="true">«</span>
-            </button>
-          </div>
-          <p
-            class="text-accent line-clamp-2 mb-3 font-semibold leading-snug break-all"
-            title={title}
-          >
-            {title}
-          </p>
-          <nav aria-label="目录导航">
-            <ol id="toc-list" class="text-muted-foreground space-y-1">
+    {
+      hasToc && (
+        <details class="toc-mobile" data-pagefind-ignore>
+          <summary>文章目录</summary>
+          <nav aria-label="移动端目录导航">
+            <ol class="text-muted-foreground space-y-1 text-sm">
               {tocList.map(item => (
                 <li>
                   <a
                     href={`#${item.slug}`}
                     class:list={[
-                      "no-underline hover:text-accent block py-0.5 leading-snug transition-colors",
+                      "hover:text-accent block py-1 leading-snug no-underline",
                       item.indent,
                     ]}
                   >
@@ -182,70 +156,121 @@ const ogImage = ogImageUrl
               ))}
             </ol>
           </nav>
-        </div>
-      </aside>
-    )}
+        </details>
+      )
+    }
+
+    {
+      hasToc && (
+        <aside aria-label="文章目录" class="toc-side">
+          <div class="text-sm">
+            <div class="mb-1 flex items-center justify-between gap-2">
+              <a
+                id="back-button-toc"
+                href={getRelativeLocaleUrl(locale, "")}
+                class="focus-outline text-muted-foreground hover:text-foreground/75 -ms-1 inline-flex items-center gap-0.5"
+              >
+                <IconChevronLeft class="inline-block size-5 rtl:rotate-180" />
+                <span>{t.post.goBack}</span>
+              </a>
+              <button
+                type="button"
+                id="toc-collapse-btn"
+                class="focus-outline text-muted-foreground hover:text-accent grid size-6 shrink-0 place-items-center rounded border-none text-xs"
+                aria-label="收起目录"
+                title="收起目录"
+              >
+                <span aria-hidden="true">«</span>
+              </button>
+            </div>
+            <p
+              class="text-accent mb-4 line-clamp-3 leading-snug font-semibold break-words"
+              title={title}
+            >
+              {title}
+            </p>
+            <nav aria-label="目录导航">
+              <ol id="toc-list" class="text-muted-foreground space-y-1">
+                {tocList.map(item => (
+                  <li>
+                    <a
+                      href={`#${item.slug}`}
+                      class:list={[
+                        "hover:text-accent block py-0.5 leading-snug no-underline transition-colors",
+                        item.indent,
+                      ]}
+                    >
+                      {item.label}
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          </div>
+        </aside>
+      )
+    }
 
     <div class="min-w-0" data-pagefind-body>
-    <h1
-      style={{ viewTransitionName: toTransitionName(post.id) }}
-      class="text-accent inline-block text-2xl font-bold sm:text-3xl"
-    >
-      {title}
-    </h1>
+      <h1
+        style={{ viewTransitionName: toTransitionName(post.id) }}
+        class="text-accent inline-block text-2xl leading-tight font-bold sm:text-[2.35rem]"
+      >
+        {title}
+      </h1>
 
-    <div class="my-2 flex items-center gap-2">
-      <Datetime {pubDatetime} {modDatetime} {timezone} size="lg" />
-      <span
-        aria-hidden="true"
+      <div class="my-2 flex items-center gap-2">
+        <Datetime {pubDatetime} {modDatetime} {timezone} size="lg" />
+        <span
+          aria-hidden="true"
+          class:list={[
+            "text-muted-foreground max-sm:hidden",
+            { hidden: !config.features.editPost?.enabled || hideEditPost },
+          ]}
+        >
+          |
+        </span>
+        <EditPost {hideEditPost} {post} class="max-sm:hidden" />
+      </div>
+
+      <article
+        id="article"
+        data-copy-label={t.post.copy}
+        data-copied-label={t.post.copied}
+        data-zoom-label={t.post.zoomImage}
+        data-preview-label={t.post.imagePreview}
+        data-close-preview-label={t.post.closeImagePreview}
         class:list={[
-          "text-muted-foreground max-sm:hidden",
-          { hidden: !config.features.editPost?.enabled || hideEditPost },
+          "mt-8 w-full",
+          "app-prose max-w-app",
+          "prose-pre:bg-(--shiki-light-bg) dark:prose-pre:bg-(--shiki-dark-bg)",
         ]}
       >
-        |
-      </span>
-      <EditPost {hideEditPost} {post} class="max-sm:hidden" />
-    </div>
+        <Content />
+      </article>
 
-    <article
-      id="article"
-      data-copy-label={t.post.copy}
-      data-copied-label={t.post.copied}
-      data-zoom-label={t.post.zoomImage}
-      data-preview-label={t.post.imagePreview}
-      data-close-preview-label={t.post.closeImagePreview}
-      class:list={[
-        "mt-8 w-full",
-        "app-prose max-w-app",
-        "prose-pre:bg-(--shiki-light-bg) dark:prose-pre:bg-(--shiki-dark-bg)",
-      ]}
-    >
-      <Content />
-    </article>
+      <hr class="my-8 border-dashed" />
 
-    <hr class="my-8 border-dashed" />
+      <EditPost class="sm:hidden" {hideEditPost} {post} />
 
-    <EditPost class="sm:hidden" {hideEditPost} {post} />
+      <BackToTopButton />
 
-    <BackToTopButton />
+      <ul class="mt-4 mb-8 flex flex-wrap gap-4 sm:my-8">
+        {tags.map(tag => <Tag tag={slugifyStr(tag)} tagName={tag} size="sm" />)}
+      </ul>
 
-    <ul class="mt-4 mb-8 flex flex-wrap gap-4 sm:my-8">
-      {tags.map(tag => <Tag tag={slugifyStr(tag)} tagName={tag} size="sm" />)}
-    </ul>
+      <ShareLinks />
 
-    <ShareLinks />
+      <hr class="my-8 border-dashed" />
 
-    <hr class="my-8 border-dashed" />
-
-    <AdjacentPostNav {prevPost} {nextPost} />
+      <AdjacentPostNav {prevPost} {nextPost} />
     </div>
   </main>
   <button
     id="toc-reopen-btn"
     type="button"
     hidden
-    class="focus-outline border-border bg-background text-accent shadow-sm fixed top-1/2 left-0 z-40 -translate-y-1/2 items-center gap-1 rounded-r-full border py-2 pr-3 pl-2 text-sm transition-all"
+    class="toc-reopen-btn focus-outline border-border bg-background text-accent fixed top-1/2 left-0 z-40 -translate-y-1/2 items-center gap-1 rounded-r-full border py-2 pr-3 pl-2 text-sm shadow-sm transition-all"
     aria-label="展开目录"
     title="展开目录"
   >
@@ -310,10 +335,8 @@ const ogImage = ogImageUrl
 
   function attachCopyButtons() {
     const article = document.getElementById("article");
-    const copyButtonLabel =
-      article?.dataset.copyLabel ?? "Copy";
-    const copiedButtonLabel =
-      article?.dataset.copiedLabel ?? "Copied";
+    const copyButtonLabel = article?.dataset.copyLabel ?? "Copy";
+    const copiedButtonLabel = article?.dataset.copiedLabel ?? "Copied";
     const codeBlocks = Array.from(document.querySelectorAll("pre"));
 
     for (const codeBlock of codeBlocks) {
@@ -676,9 +699,7 @@ const ogImage = ogImageUrl
       entries => {
         const visible = entries
           .filter(entry => entry.isIntersecting)
-          .sort(
-            (a, b) => a.boundingClientRect.top - b.boundingClientRect.top
-          );
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
         if (visible.length === 0) return;
         const id = visible[0].target.id;
         if (id !== activeId) {

@@ -13,8 +13,18 @@
       @apply text-foreground mb-3;
     }
 
+    h2 {
+      @apply border-accent/60 mt-12 border-s-2 ps-4 text-2xl leading-tight;
+    }
+
+    h4,
+    h5,
+    h6 {
+      @apply mt-8 text-lg leading-snug;
+    }
+
     h3 {
-      @apply italic;
+      @apply mt-10 text-xl leading-snug;
     }
 
     p,
@@ -25,6 +35,10 @@
     table,
     code {
       @apply text-foreground;
+    }
+
+    p {
+      @apply leading-8;
     }
 
     a {
@@ -134,5 +148,14 @@
     .highlighted-word {
       @apply border-border rounded-sm border px-0.5 py-px;
     }
+  }
+}
+
+@media (max-width: 639px) {
+  .app-prose table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
   }
 }

@@ -1,6 +1,7 @@
 ---
 title: "在雨后醒来｜从 Pi-Agent 开始的 Harness 自进化实践"
 pubDatetime: 2026-09-07T07:17:00Z
+featured: true
 description: "从 Claude Code 到 Codex，再到 Pi-Agent：一篇用真实使用数据写成的 AI 编码工具迁移记录，以及从工具使用者走向 Harness 自进化实践者的过程。"
 tags:
   - Pi
@@ -29,12 +30,12 @@ ogImage: ./images/img01-封面.png
 ![2026年4月至8月AI编码工具Claude Code与Codex的每周Token消耗对比图：纵轴为每周Token消耗总量（单位：亿），橙色线代表Claude Code，蓝色线代表Codex](./images/img02-token使用曲线.png)
 
 - 4 月到 5 月，Claude Code 一直是我的主力工具。图上的橙线从**1 亿一路涨到 8 亿 token**，我也从偶尔让它写点代码，变成把调试、重构和日常维护都交给它。实际上我也根本没用过Codex
--  **6 月第一周，蓝线出现，我开始使用Codex，很快就越过橙线；**再过一周，Claude Code 几乎归零，**Codex 正式接管了我的工作流**。整个切换只用了一周。
+- **6 月第一周，蓝线出现，我开始使用Codex，很快就越过橙线；**再过一周，Claude Code 几乎归零，**Codex 正式接管了我的工作流**。整个切换只用了一周。
 - **7 月是 Codex 使用量最高的时候**，单周一度超过 23 亿 token。中间那次 Claude Code 短暂回升，是我回去处理了一些旧任务，但很快又掉了下去。到了 8 月，蓝线也开始回落，因为 pi 加了进来，我的工具又从 Codex 单跑变成了 Codex 和 pi 并用。这个变化后面再讲。
 
- 换到 Codex 之后，我消耗的 token 明显更多了：Claude Code 四个月一共用了 44.95 亿，Codex 三个月用了 126.10 亿——接近前者的 2.8 倍。
+换到 Codex 之后，我消耗的 token 明显更多了：Claude Code 四个月一共用了 44.95 亿，Codex 三个月用了 126.10 亿——接近前者的 2.8 倍。
 
-但 token 多不等于更贵：如果把缓存读取也算进去，笔者简单计算，得出Claude  Code 每百万 token 要 ¥1.33，Codex 只要 ¥0.56——**2.8 倍的 token，总费用只高了约 17%**。换个更直观的说法：**同样花一块钱，Codex 能跑的 token 大约是 Claude Code 的 2.4 倍。**
+但 token 多不等于更贵：如果把缓存读取也算进去，笔者简单计算，得出Claude Code 每百万 token 要 ¥1.33，Codex 只要 ¥0.56——**2.8 倍的 token，总费用只高了约 17%**。换个更直观的说法：**同样花一块钱，Codex 能跑的 token 大约是 Claude Code 的 2.4 倍。**
 
 所以我离开 Claude Code，不是为了少用 token，也不是因为它不够聪明。真正有意思的问题是：一个我已经用顺手、而且用得很重的工具，为什么会在一周内被另一个工具替代？换完以后，我为什么反 而敢用更多 token？
 
@@ -100,15 +101,15 @@ Mario 说，每次发版，ClaudeCode系统提示词和工具都在变，破坏�
 
 这句话听上去带着几分极客式的任性，但放在 coding agent 领域，反而是一种非常务实的克制。Pi 的系统提示词被压到极短，连同工具定义在内不到 1000 token，核心正文仅约 200 token；默认内置的工具也只有四个：read、write、edit 和 bash。
 
-| 功能 | Claude Code | Codex | Pi |
-|-|-|-|-|
-| MCP 支持 | ✅ 原生 | ✅ 原生 | ❌ 没有 |
-| Plan Mode | ✅ 有 | ✅ 有 | ❌ 没有 |
-| 子 Agent | ✅ 有 | ✅ 有 | ❌ 没有 |
-| 权限弹窗 | ✅ 有 | ✅ 有 | ❌ 没有 |
-| 内置待办 | ✅ 有 | ✅ 有 | ❌ 没有 |
+| 功能      | Claude Code | Codex   | Pi      |
+| --------- | ----------- | ------- | ------- |
+| MCP 支持  | ✅ 原生     | ✅ 原生 | ❌ 没有 |
+| Plan Mode | ✅ 有       | ✅ 有   | ❌ 没有 |
+| 子 Agent  | ✅ 有       | ✅ 有   | ❌ 没有 |
+| 权限弹窗  | ✅ 有       | ✅ 有   | ❌ 没有 |
+| 内置待办  | ✅ 有       | ✅ 有   | ❌ 没有 |
 
-此外，我们看上面的表格，很多harness把所有功能预装上了，但说实话很多功能并不是我需要的。比如MCP，笔者从来没有使用过，不装；子agent，这个我还是要的，通过pi的插件装备上了这个功能。xxxxxx
+此外，我们看上面的表格，很多 harness 把所有功能预装上了，但说实话，很多功能并不是我需要的。比如 MCP，笔者从来没有使用过，不装；子 agent，这个我还是要的，通过 Pi 的插件装备上了这个功能。
 
 这正是 Pi 和 Claude Code、Codex **最核心的思路差异**。后两者走的是成品产品路线：尽可能把主流场景的能力提前做好，用户开箱即用。而 Pi 只提供最基础的能力原语，剩下的所有高阶功能，都交由模型、终端和用户自己组合扩展。
 
@@ -174,8 +175,8 @@ curl -fsSL https://pi.dev/install.sh | sh
 
 例如当我使用非视觉模型，希望有个调用视觉模型的工具帮我处理图片，最后Pi经过本地验证和三方比价，给我推荐了最适合我的插件。而我在这个过程中，只提出了自己的需求+验收结果。初始时，笔者也没有装太多插件，在使用过程中，逐渐意识到自己需要什么插件的时候，才会去装一下。当我有需求时，我一般起一个Pi进程去帮我找一下。下面是笔者的一些个人经历。
 
-| 需要调用视觉模型的工具帮我处理图片 | 使用过程中，我觉得Pi的UI太简陋了，使用了社区的UI加强插件。 | 我需要subagent能力，装了subagent插件 | 我使用cmux终端，装了pi-cmux插件，用于进行一些终端操作和消息提醒 |
-|-|-|-|-|
+| 需要调用视觉模型的工具帮我处理图片                                                  | 使用过程中，我觉得Pi的UI太简陋了，使用了社区的UI加强插件。                                                            | 我需要subagent能力，装了subagent插件                                                                                                                                   | 我使用cmux终端，装了pi-cmux插件，用于进行一些终端操作和消息提醒                                                                     |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | ![终端中向Pi-Agent询问插件情况的命令记录](./images/img12-表格-视觉模型插件对话.jpg) | ![Pi-Agent与用户关于插件推荐的对话界面，给出推荐候选、各包数据对比及重载后验证建议](./images/img13-表格-插件推荐.png) | ![Pi-Agent启动界面：左侧菜单选项，右侧欢迎信息及已加载插件（deepseek-v4-flash、ep-copilot2等），显示7个扩展、1个技能、1个提示模板](./images/img14-表格-Pi启动界面.png) | ![macOS界面，Pi编码助手完成任务的弹窗消息（红色方框标注），对应pi-cmux插件的终端消息提醒功能](./images/img16-表格-完成任务通知.png) |
 
 > 表格中第3列图片（img15）实际对应 subagent 执行输出界面，见下方补图。
@@ -184,16 +185,16 @@ curl -fsSL https://pi.dev/install.sh | sh
 
 读者如果希望使用Pi-Agent，这是笔者推荐的一些插件，读者只需要执行相应的命令进行安装，或者直接让pi帮你安装。
 
-| 名称 | 一句话说明 | 安装方式 |
-|-|-|-|
-| @ff-labs/pi-fff | 用 Rust 原生、SIMD 加速的 FFF 模糊搜索替换内置 find/grep 工具 | `pi install npm:@ff-labs/pi-fff` |
-| @narumitw/pi-btw | 新增 /btw 旁路提问命令，在临时侧线程快速答疑，不污染主对话 | `pi install npm:@narumitw/pi-btw` |
-| Dovyski/pi-recap | 每次交互结束后在状态栏显示斜体小结，并更新终端标签页标题 | `pi install git:https://github.com/Dovyski/pi-recap` |
-| pi-powerline-footer | Powerline 风格状态栏，带欢迎浮层和 AI 生成的加载提示语 | `pi install npm:pi-powerline-footer` |
-| pi-subagents | subagents 的 Pi 实现，可以用 Herdr/Tmux 代替 | `pi install npm:pi-subagents` |
-| pi-tool-display | 紧凑渲染工具调用、diff 可视化与输出截断，让 TUI 更清爽 | `pi install npm:pi-tool-display` |
-| pi-web-access | 网页搜索、URL 抓取、GitHub 克隆、PDF 提取 | `pi install npm:pi-web-access` |
-| @ogulcancelik/pi-herdr | 通过 Pi 控制 Herdr，代替 subagents | `pi install npm:@ogulcancelik/pi-herdr` |
+| 名称                   | 一句话说明                                                    | 安装方式                                             |
+| ---------------------- | ------------------------------------------------------------- | ---------------------------------------------------- |
+| @ff-labs/pi-fff        | 用 Rust 原生、SIMD 加速的 FFF 模糊搜索替换内置 find/grep 工具 | `pi install npm:@ff-labs/pi-fff`                     |
+| @narumitw/pi-btw       | 新增 /btw 旁路提问命令，在临时侧线程快速答疑，不污染主对话    | `pi install npm:@narumitw/pi-btw`                    |
+| Dovyski/pi-recap       | 每次交互结束后在状态栏显示斜体小结，并更新终端标签页标题      | `pi install git:https://github.com/Dovyski/pi-recap` |
+| pi-powerline-footer    | Powerline 风格状态栏，带欢迎浮层和 AI 生成的加载提示语        | `pi install npm:pi-powerline-footer`                 |
+| pi-subagents           | subagents 的 Pi 实现，可以用 Herdr/Tmux 代替                  | `pi install npm:pi-subagents`                        |
+| pi-tool-display        | 紧凑渲染工具调用、diff 可视化与输出截断，让 TUI 更清爽        | `pi install npm:pi-tool-display`                     |
+| pi-web-access          | 网页搜索、URL 抓取、GitHub 克隆、PDF 提取                     | `pi install npm:pi-web-access`                       |
+| @ogulcancelik/pi-herdr | 通过 Pi 控制 Herdr，代替 subagents                            | `pi install npm:@ogulcancelik/pi-herdr`              |
 
 #### 装修记3：自己开发修改插件
 
