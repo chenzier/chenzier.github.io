@@ -75,7 +75,21 @@ const {
   hideEditPost,
 } = post.data;
 
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
+
+// ---- 目录（TOC）数据：从渲染的标题结构中提取 h2/h3/h4 ----
+const tocItems = (headings ?? [])
+  .filter(h => h.depth >= 2 && h.depth <= 4)
+  .map(h => ({ depth: h.depth, slug: h.slug, text: h.text }));
+let tocSeq = 0;
+const tocList = tocItems.map(item => ({
+  ...item,
+  label:
+    item.depth === 2 ? `${++tocSeq}. ${item.text}` : item.text,
+  indent:
+    item.depth === 2 ? "" : item.depth === 3 ? "ms-4" : "ms-8",
+}));
+const hasToc = tocList.length > 0;
 
 let ogImageUrl: string | undefined;
 
@@ -112,9 +126,45 @@ const ogImage = ogImageUrl
 
   <main
     id="main-content"
-    class:list={["app-layout", { "mt-8": !config.features.showBackButton }]}
-    data-pagefind-body
+    class:list={[
+      "app-layout",
+      { "mt-8": !config.features.showBackButton },
+      { "lg:max-w-5xl lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-x-10": hasToc },
+    ]}
   >
+    {hasToc && (
+      <aside aria-label="文章目录" class="hidden lg:block">
+        <div
+          class="border-border sticky top-8 max-h-[calc(100vh-4rem)] overflow-y-auto border-s-2 ps-4 text-sm"
+        >
+          <p
+            class="text-accent line-clamp-2 mb-4 font-semibold leading-snug break-all"
+            title={title}
+          >
+            {title}
+          </p>
+          <nav aria-label="目录导航">
+            <ol id="toc-list" class="text-muted-foreground space-y-1">
+              {tocList.map(item => (
+                <li>
+                  <a
+                    href={`#${item.slug}`}
+                    class:list={[
+                      "no-underline hover:text-accent block py-0.5 leading-snug transition-colors",
+                      item.indent,
+                    ]}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        </div>
+      </aside>
+    )}
+
+    <div class="min-w-0" data-pagefind-body>
     <h1
       style={{ viewTransitionName: toTransitionName(post.id) }}
       class="text-accent inline-block text-2xl font-bold sm:text-3xl"
@@ -167,6 +217,7 @@ const ogImage = ogImageUrl
     <hr class="my-8 border-dashed" />
 
     <AdjacentPostNav {prevPost} {nextPost} />
+    </div>
   </main>
   <Footer />
 </PostLayout>
@@ -547,4 +598,72 @@ const ogImage = ogImageUrl
   document.addEventListener("astro:after-swap", () =>
     window.scrollTo({ left: 0, top: 0, behavior: "instant" })
   );
+
+  /** 侧边目录：平滑滚动 + 滚动高亮当前章节。 */
+  function initTocSidebar() {
+    const list = document.getElementById("toc-list");
+    if (!list) return;
+
+    const links = Array.from(list.querySelectorAll('a[href^="#"]'));
+    if (links.length === 0) return;
+
+    /** id → 标题元素 */
+    const headingById = new Map();
+    for (const link of links) {
+      const id = link.getAttribute("href").slice(1);
+      const heading = document.getElementById(id);
+      if (heading) headingById.set(id, heading);
+    }
+    if (headingById.size === 0) return;
+
+    function setActive(id) {
+      for (const link of links) {
+        const active = link.getAttribute("href") === `#${id}`;
+        link.classList.toggle("text-accent", active);
+        link.classList.toggle("font-medium", active);
+      }
+    }
+
+    // 点击目录项：平滑滚动到对应标题
+    for (const link of links) {
+      link.addEventListener("click", event => {
+        const id = link.getAttribute("href").slice(1);
+        const heading = headingById.get(id);
+        if (!heading) return;
+        event.preventDefault();
+        heading.scrollIntoView({ behavior: "smooth", block: "start" });
+        history.replaceState(null, "", `#${id}`);
+        setActive(id);
+      });
+    }
+
+    // 滚动时高亮当前阅读的章节（取视口顶部 30% 区域内最靠上的标题）
+    let activeId = null;
+    const observer = new IntersectionObserver(
+      entries => {
+        const visible = entries
+          .filter(entry => entry.isIntersecting)
+          .sort(
+            (a, b) => a.boundingClientRect.top - b.boundingClientRect.top
+          );
+        if (visible.length === 0) return;
+        const id = visible[0].target.id;
+        if (id !== activeId) {
+          activeId = id;
+          setActive(id);
+        }
+      },
+      { rootMargin: "0px 0px -70% 0px", threshold: 0 }
+    );
+    for (const heading of headingById.values()) observer.observe(heading);
+
+    // 初始高亮：优先 URL 锚点，否则第一项
+    if (window.location.hash) {
+      const hashId = decodeURIComponent(window.location.hash.slice(1));
+      if (headingById.has(hashId)) setActive(hashId);
+    } else {
+      setActive(links[0].getAttribute("href").slice(1));
+    }
+  }
+  initTocSidebar();
 </script>
