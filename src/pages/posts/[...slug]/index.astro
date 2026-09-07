@@ -14,6 +14,8 @@ import ShareLinks from "./_components/ShareLinks.astro";
 import BackButton from "./_components/BackButton.astro";
 import BackToTopButton from "./_components/BackToTopButton.astro";
 import AdjacentPostNav from "./_components/AdjacentPostNav.astro";
+import IconChevronLeft from "@/assets/icons/IconChevronLeft.svg";
+import { getRelativeLocaleUrl } from "astro:i18n";
 import config from "@/config";
 import { useTranslations } from "@/i18n";
 
@@ -122,23 +124,43 @@ const ogImage = ogImageUrl
 >
   <Header />
 
-  <BackButton />
+  <div class="lg:hidden">
+    <BackButton />
+  </div>
 
   <main
     id="main-content"
     class:list={[
       "app-layout",
       { "mt-8": !config.features.showBackButton },
-      { "lg:max-w-5xl lg:grid lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-x-10": hasToc },
+      { "post-with-toc": hasToc },
     ]}
+    data-toc="open"
   >
     {hasToc && (
-      <aside aria-label="文章目录" class="hidden lg:block">
-        <div
-          class="border-border sticky top-8 max-h-[calc(100vh-4rem)] overflow-y-auto border-s-2 ps-4 text-sm"
-        >
+      <aside aria-label="文章目录" class="toc-side">
+        <div class="border-border sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto border-s-2 ps-4 text-sm">
+          <div class="mb-1 flex items-center justify-between gap-2">
+            <a
+              id="back-button-toc"
+              href={getRelativeLocaleUrl(locale, "")}
+              class="focus-outline text-muted-foreground hover:text-foreground/75 -ms-1 inline-flex items-center gap-0.5"
+            >
+              <IconChevronLeft class="inline-block size-5 rtl:rotate-180" />
+              <span>{t.post.goBack}</span>
+            </a>
+            <button
+              type="button"
+              id="toc-collapse-btn"
+              class="focus-outline text-muted-foreground hover:text-accent grid size-6 shrink-0 place-items-center rounded border-none text-xs"
+              aria-label="收起目录"
+              title="收起目录"
+            >
+              <span aria-hidden="true">«</span>
+            </button>
+          </div>
           <p
-            class="text-accent line-clamp-2 mb-4 font-semibold leading-snug break-all"
+            class="text-accent line-clamp-2 mb-3 font-semibold leading-snug break-all"
             title={title}
           >
             {title}
@@ -219,6 +241,17 @@ const ogImage = ogImageUrl
     <AdjacentPostNav {prevPost} {nextPost} />
     </div>
   </main>
+  <button
+    id="toc-reopen-btn"
+    type="button"
+    hidden
+    class="focus-outline border-border bg-background text-accent shadow-sm fixed top-1/2 left-0 z-40 -translate-y-1/2 items-center gap-1 rounded-r-full border py-2 pr-3 pl-2 text-sm transition-all"
+    aria-label="展开目录"
+    title="展开目录"
+  >
+    <span aria-hidden="true">☰</span>
+    <span>目录</span>
+  </button>
   <Footer />
 </PostLayout>
 
@@ -666,4 +699,45 @@ const ogImage = ogImageUrl
     }
   }
   initTocSidebar();
+
+  /** 目录收起/展开（沉浸式阅读），偏好存入 localStorage。 */
+  function initTocCollapse() {
+    const main = document.querySelector("#main-content.post-with-toc");
+    const collapseBtn = document.getElementById("toc-collapse-btn");
+    const reopenBtn = document.getElementById("toc-reopen-btn");
+    if (!main || !collapseBtn || !reopenBtn) return;
+
+    const apply = (closed, persist) => {
+      main.dataset.toc = closed ? "closed" : "open";
+      reopenBtn.hidden = !closed;
+      if (persist) {
+        try {
+          localStorage.setItem("toc-collapsed", closed ? "1" : "0");
+        } catch (err) {
+          /* 隐私模式下可能失败，忽略 */
+        }
+      }
+    };
+
+    // 初始状态：优先用户上次的偏好（默认展开）
+    let stored = "0";
+    try {
+      stored = localStorage.getItem("toc-collapsed") ?? "0";
+    } catch (err) {
+      /* ignore */
+    }
+    if (stored === "1") apply(true, false);
+
+    collapseBtn.addEventListener("click", () => apply(true, true));
+    reopenBtn.addEventListener("click", () => apply(false, true));
+  }
+  initTocCollapse();
+
+  /** 目录栏顶部的返回按钮：与正文顶部的返回按钮共用“上次位置”记忆。 */
+  function syncTocBackUrl() {
+    const tocBack = document.getElementById("back-button-toc");
+    const backUrl = sessionStorage.getItem("backUrl");
+    if (tocBack && backUrl) tocBack.href = backUrl;
+  }
+  syncTocBackUrl();
 </script>

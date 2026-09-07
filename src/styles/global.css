@@ -37,3 +37,44 @@
 :target {
   scroll-margin-block: 1rem;
 }
+
+/* ============================================================
+   文章页侧边目录（.post-with-toc）
+   桌面端两栏：左侧 13rem 目录 + 右侧内容；可收起（沉浸式阅读）
+   ============================================================ */
+.toc-side {
+  display: none;
+}
+
+/* 悬浮“目录”按钮：仅在目录收起时显示（由 JS 移除 hidden 属性控制） */
+.toc-reopen-btn {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .post-with-toc {
+    max-width: 64rem;
+    display: grid;
+    grid-template-columns: 13rem minmax(0, 1fr);
+    column-gap: 2.5rem;
+    align-items: start;
+  }
+
+  .toc-side {
+    display: block;
+  }
+
+  /* 收起目录 = 沉浸式阅读：回到单栏版式 */
+  .post-with-toc[data-toc="closed"] {
+    max-width: 48rem;
+    display: block;
+  }
+
+  .post-with-toc[data-toc="closed"] .toc-side {
+    display: none;
+  }
+
+  .toc-reopen-btn {
+    display: flex;
+  }
+}
