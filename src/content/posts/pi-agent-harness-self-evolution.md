@@ -1,6 +1,6 @@
 ---
 title: "在雨后醒来｜从 Pi-Agent 开始的 Harness 自进化实践"
-pubDatetime: 2026-09-07T15:17:00Z
+pubDatetime: 2026-09-07T07:17:00Z
 description: "从 Claude Code 到 Codex，再到 Pi-Agent：一篇用真实使用数据写成的 AI 编码工具迁移记录，以及从工具使用者走向 Harness 自进化实践者的过程。"
 tags:
   - Pi
