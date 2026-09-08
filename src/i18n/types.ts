@@ -6,6 +6,7 @@ export interface UIStrings {
     about: string;
     archives: string;
     search: string;
+    trips: string;
   };
   post: {
     publishedAt: string;
@@ -55,6 +56,9 @@ export interface UIStrings {
 
     searchTitle: string;
     searchDesc: string;
+
+    tripsTitle: string;
+    tripsDesc: string;
   };
   a11y: {
     skipToContent: string;

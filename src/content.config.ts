@@ -34,4 +34,21 @@ const pages = defineCollection({
   }),
 });
 
-export const collections = { posts, pages };
+/** 旅行游记（朋友圈式短篇） */
+const trips = defineCollection({
+  loader: glob({ pattern: "**/[^_]*.{md,mdx}", base: "./src/content/trips" }),
+  schema: z.object({
+    title: z.string(),
+    series: z.string().optional(), // 系列：环球旅行 / 平行宇宙 …
+    station: z.number().optional(), // 第 N 站
+    destination: z.string().optional(), // 城市
+    region: z.string().optional(), // 省 / 国
+    date: z.coerce.date().optional(), // 到访日期（可选，展示用）
+    coords: z.object({ lat: z.number(), lng: z.number() }).optional(), // 足迹地图用
+    images: z.array(z.string()).optional(), // 图集（public 下路径，朋友圈九宫格）
+    description: z.string().optional(),
+    draft: z.boolean().optional(),
+  }),
+});
+
+export const collections = { posts, pages, trips };

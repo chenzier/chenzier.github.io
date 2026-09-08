@@ -8,6 +8,7 @@ export default {
     about: "关于",
     archives: "归档",
     search: "搜索",
+    trips: "游记",
   },
   post: {
     publishedAt: "发布于",
@@ -57,6 +58,9 @@ export default {
 
     searchTitle: "搜索",
     searchDesc: "搜索任意文章…",
+
+    tripsTitle: "游记",
+    tripsDesc: "把走过的路，写成朋友圈。",
   },
   a11y: {
     skipToContent: "跳到主要内容",

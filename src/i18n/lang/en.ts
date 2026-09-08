@@ -8,6 +8,7 @@ export default {
     about: "About",
     archives: "Archives",
     search: "Search",
+    trips: "Trips",
   },
   post: {
     publishedAt: "Published at",
@@ -57,6 +58,9 @@ export default {
 
     searchTitle: "Search",
     searchDesc: "Search any article ...",
+
+    tripsTitle: "Trips",
+    tripsDesc: "Travel notes, moments-style.",
   },
   a11y: {
     skipToContent: "Skip to content",
