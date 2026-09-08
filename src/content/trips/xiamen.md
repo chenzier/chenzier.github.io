@@ -5,6 +5,10 @@ station: 2
 destination: 厦门
 region: 福建
 description: 闲鱼 30 块进厦大，结果要翻一座野山。
+images:
+  - "/trips/xiamen-1.svg"
+  - "/trips/xiamen-2.svg"
+  - "/trips/xiamen-3.svg"
 ---
 
 环球旅行第二站，听说在福建，只要妈祖同意，就可坐船去往全世界，福建人眼里没有天堑，可我没想到居然要走山路[裂开][裂开]

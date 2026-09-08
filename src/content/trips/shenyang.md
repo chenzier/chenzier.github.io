@@ -5,6 +5,10 @@ station: 22
 destination: 沈阳
 region: 辽宁
 description: 沈阳三天，被迫当了五次鸡架品鉴师。
+images:
+  - "/trips/shenyang-1.svg"
+  - "/trips/shenyang-2.svg"
+  - "/trips/shenyang-3.svg"
 ---
 
 在主宇宙 42 AKA 辽宁·沈阳🇨🇳🇨🇳

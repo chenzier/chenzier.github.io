@@ -5,6 +5,11 @@ station: 12
 destination: 河口湖
 region: 日本 · 山梨県
 description: 环球旅行十二站，在富士山还没有光秃秃之前来到了这里。
+images:
+  - "/trips/kawaguchiko-1.svg"
+  - "/trips/kawaguchiko-2.svg"
+  - "/trips/kawaguchiko-3.svg"
+  - "/trips/kawaguchiko-4.svg"
 ---
 
 环球旅行十二站，在富士山还没有光秃秃之前来到了这里🗻🗻但似乎天气也不怎么好😈👿

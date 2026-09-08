@@ -3,6 +3,9 @@ title: "南京：一边爬历史的台阶，一边吃现实的烟火"
 destination: 南京
 region: 江苏
 description: 替那个失踪的年轻人，在南京走了几段。
+images:
+  - "/trips/nanjing-1.svg"
+  - "/trips/nanjing-2.svg"
 ---
 
 九月南京的暑气还黏在背上，明孝陵神道两侧的石兽都晒得发烫。我实在走不动了，干脆混进一群举着小旗的游客里，蹭了会儿导游的讲解。

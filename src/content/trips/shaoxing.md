@@ -5,6 +5,16 @@ station: 31
 destination: 绍兴
 region: 浙江
 description: 第三次拐进小巷去吃鸡蛋烤饺，才发现绍兴人把顶好吃的都藏起来了。
+images:
+  - "/trips/shaoxing-1.svg"
+  - "/trips/shaoxing-2.svg"
+  - "/trips/shaoxing-3.svg"
+  - "/trips/shaoxing-4.svg"
+  - "/trips/shaoxing-5.svg"
+  - "/trips/shaoxing-6.svg"
+  - "/trips/shaoxing-7.svg"
+  - "/trips/shaoxing-8.svg"
+  - "/trips/shaoxing-9.svg"
 ---
 
 第三次拐进小巷去吃鸡蛋烤饺，我才发现：你们绍兴人太会保密了，把顶好吃的藏起来不给外人看😈😈

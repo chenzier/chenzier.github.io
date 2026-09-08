@@ -2,8 +2,6 @@
 import { getCollection, render } from "astro:content";
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
-import Breadcrumb from "@/components/Breadcrumb.astro";
-import Main from "@/components/Main.astro";
 import Footer from "@/components/Footer.astro";
 import { useTranslations } from "@/i18n";
 import config from "@/config";
@@ -11,167 +9,256 @@ import config from "@/config";
 const locale = Astro.currentLocale ?? config.site.lang;
 const t = useTranslations(locale);
 
-type TripEntry = {
-  id: string;
-  data: {
-    title: string;
-    series?: string;
-    station?: number;
-    destination?: string;
-    region?: string;
-    date?: Date;
-    images?: string[];
-    description?: string;
-  };
-  Content: any;
-};
+// 朋友圈时间线：最新在前（无站号的散记视为最新，其余按站号倒序）
+const allTrips = (await getCollection("trips"))
+  .filter(trip => !trip.data.draft)
+  .sort((a, b) => {
+    const aSt = a.data.station;
+    const bSt = b.data.station;
+    if (aSt === undefined && bSt === undefined) return 0;
+    if (aSt === undefined) return -1; // 散记最前
+    if (bSt === undefined) return 1;
+    return bSt - aSt;
+  });
 
-// 系列展示配置：图标 + 排序（其余归入“散记”）
-const SERIES_ORDER = [
-  { key: "环球旅行", emoji: "🌏" },
-  { key: "平行宇宙", emoji: "🌀" },
-];
-
-const allTrips = (await getCollection("trips")).filter(
-  trip => !trip.data.draft
-);
-
-const withContent: TripEntry[] = await Promise.all(
+const posts = await Promise.all(
   allTrips.map(async trip => ({
-    id: trip.id,
-    data: trip.data as TripEntry["data"],
+    data: trip.data,
     Content: (await render(trip)).Content,
   }))
 );
 
-type TripGroup = {
-  label: string;
-  emoji: string;
-  items: TripEntry[];
+const SERIES_EMOJI: Record<string, string> = {
+  环球旅行: "🌏",
+  平行宇宙: "🌀",
 };
 
-const groups: TripGroup[] = [];
-
-for (const { key, emoji } of SERIES_ORDER) {
-  const items = withContent
-    .filter(trip => trip.data.series === key)
-    .sort(
-      (a, b) =>
-        (a.data.station ?? Number.MAX_SAFE_INTEGER) -
-        (b.data.station ?? Number.MAX_SAFE_INTEGER)
-    );
-  if (items.length > 0) groups.push({ label: key, emoji, items });
-}
-
-// 未归入系列的独立游记
-const singles = withContent.filter(trip => !trip.data.series);
-if (singles.length > 0) {
-  groups.push({ label: "散记", emoji: "✍️", items: singles });
-}
-
-const total = withContent.length;
-
-/** 朋友圈式图集：1 张全宽，2 张两列，3 张以上三列 */
-const imageGridClass = (count: number) =>
-  count >= 3 ? "grid-cols-3" : count === 2 ? "grid-cols-2" : "grid-cols-1";
+/** 朋友圈九宫格列数：1 单张大图；2/4 两列；其余三列 */
+const gridCols = (n: number) =>
+  n === 1 ? "grid-cols-1" : n === 2 || n === 4 ? "grid-cols-2" : "grid-cols-3";
 ---
 
 <Layout title={`${t.pages.tripsTitle} | ${config.site.title}`}>
   <Header />
 
-  <Breadcrumb />
+  <main id="main-content" class="app-layout pb-16" data-pagefind-body>
+    <div
+      class="mx-auto mt-8 w-full max-w-xl overflow-hidden rounded-2xl border border-border bg-background shadow-xs"
+    >
+      {/* ── 相册封面横幅 ── */}
+      <div class="relative h-48 select-none overflow-hidden sm:h-56">
+        <div
+          class="absolute inset-0"
+          style="background: linear-gradient(130deg,#1e3a8a 0%,#0ea5e9 45%,#f472b6 100%)"
+        />
+        <div
+          aria-hidden="true"
+          class="absolute inset-0 opacity-30"
+          style="background-image: radial-gradient(circle at 20% 30%, #fff 0 2px, transparent 2.5px), radial-gradient(circle at 75% 60%, #fff 0 2px, transparent 2.5px), radial-gradient(circle at 45% 85%, #fff 0 1.5px, transparent 2px); background-size: 130px 130px, 100px 100px, 150px 150px;"
+        />
+        <div class="absolute right-5 bottom-4 left-5 flex items-end justify-between gap-3">
+          <p class="text-white text-lg font-semibold drop-shadow-sm">
+            {config.site.author} 的旅行朋友圈
+          </p>
+          <p class="text-white/85 text-xs whitespace-nowrap">
+            {posts.length} 条动态
+          </p>
+        </div>
+      </div>
 
-  <Main pageTitle={t.pages.tripsTitle} pageDesc={t.pages.tripsDesc}>
-    {
-      groups.map(group => (
-        <section class="mt-8">
-          <h2 class="flex items-baseline gap-2 text-lg font-semibold">
-            <span aria-hidden="true">{group.emoji}</span>
-            <span>{group.label}</span>
-            <span class="text-muted-foreground text-xs font-normal">
-              已解锁 {group.items.length} 篇
-            </span>
-          </h2>
+      {/* ── 朋友圈动态流 ── */}
+      <div class="divide-border divide-y">
+        {
+          posts.map(post => (
+            <article class="flex gap-3 px-4 py-5 sm:px-5">
+              {/* 头像 */}
+              <div
+                aria-hidden="true"
+                class="text-white grid size-10 shrink-0 place-items-center rounded-lg text-lg font-bold"
+                style="background: linear-gradient(135deg,#0ea5e9,#7c3aed)"
+              >
+                {config.site.author.slice(0, 1).toUpperCase()}
+              </div>
 
-          <ol class="mt-4 space-y-6">
-            {group.items.map(trip => (
-              <li>
-                <article
-                  class="border-border bg-background rounded-2xl border p-5 sm:p-6"
-                  data-pagefind-body
-                >
-                  <header class="flex items-start justify-between gap-3">
-                    <h3 class="text-lg leading-snug font-semibold break-all sm:text-xl">
-                      {trip.data.title}
-                    </h3>
-                    {trip.data.station && (
-                      <span class="text-accent border-accent/40 shrink-0 rounded-full border px-2.5 py-0.5 text-xs whitespace-nowrap">
-                        第 {trip.data.station} 站
-                      </span>
-                    )}
-                  </header>
-
-                  {(trip.data.region || trip.data.destination) && (
-                    <p class="text-muted-foreground mt-1.5 text-sm">
-                      📍
-                      {[trip.data.region, trip.data.destination]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </p>
-                  )}
-
+              <div class="min-w-0 flex-1">
+                {/* 昵称 + 系列标签 */}
+                <div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                  <p class="text-[15px] font-semibold break-all">
+                    {config.site.author}
+                  </p>
                   {
-                    trip.data.date && (
-                      <p class="text-muted-foreground mt-1 text-xs">
-                        {trip.data.date.toISOString().slice(0, 10)}
-                      </p>
+                    post.data.series && (
+                      <span class="text-muted-foreground text-xs">
+                        {SERIES_EMOJI[post.data.series] ?? "🧳"}
+                        {post.data.series}
+                        {post.data.station && ` · 第 ${post.data.station} 站`}
+                      </span>
                     )
                   }
+                </div>
 
-                  <div
-                    class:list={[
-                      "mt-4 text-foreground/90 text-[15px] leading-7 sm:text-base",
-                      "[&>p]:mb-3 [&>p]:last:mb-0 [&_a]:text-accent [&_a]:underline",
-                    ]}
-                  >
-                    <trip.Content />
-                  </div>
+                {/* 正文 */}
+                <div
+                  class:list={[
+                    "mom-body text-foreground/90 mt-1.5 text-[15px] leading-7 break-words",
+                    "[&>p]:mb-2 [&>p]:last:mb-0",
+                  ]}
+                >
+                  <post.Content />
+                </div>
 
-                  {
-                    trip.data.images && trip.data.images.length > 0 && (
+                {/* 图片九宫格 */}
+                {
+                  post.data.images && post.data.images.length > 0 && (
+                    post.data.images.length === 1 ? (
+                      <img
+                        src={post.data.images[0]}
+                        alt=""
+                        loading="lazy"
+                        class="mt-2.5 aspect-square w-[55%] rounded-lg object-cover"
+                      />
+                    ) : (
                       <div
                         class:list={[
-                          "mt-4 grid gap-2",
-                          imageGridClass(trip.data.images.length),
+                          "mt-2.5 grid gap-1.5",
+                          gridCols(post.data.images.length),
                         ]}
                       >
-                        {trip.data.images.map(src => (
+                        {post.data.images.map(src => (
                           <img
                             src={src}
                             alt=""
                             loading="lazy"
-                            class="size-full aspect-square rounded-xl object-cover"
+                            class="aspect-square w-full rounded-lg object-cover"
                           />
                         ))}
                       </div>
                     )
-                  }
-                </article>
-              </li>
-            ))}
-          </ol>
-        </section>
-      ))
-    }
+                  )
+                }
+
+                {/* 底部信息行：地点时间（左）· 点赞（右） */}
+                <div class="mt-2.5 flex items-center justify-between gap-3">
+                  <p class="text-muted-foreground text-xs">
+                    📍
+                    {[post.data.region, post.data.destination]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                  <button
+                    type="button"
+                    class="mom-like focus-outline text-muted-foreground hover:text-accent inline-flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-xs"
+                    aria-label="点赞"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                      class="size-4"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M21 8.4c0 4.4-9 12.6-9 12.6S3 12.8 3 8.4A4.9 4.9 0 0 1 7.9 3.5 5.4 5.4 0 0 1 12 5.6a5.4 5.4 0 0 1 4.1-2.1A4.9 4.9 0 0 1 21 8.4Z"
+                      />
+                    </svg>
+                    <span class="mom-like-count"></span>
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
 
     {
-      total === 0 && (
+      posts.length === 0 && (
         <p class="text-muted-foreground mt-12 text-center">
           游记还在路上，敬请期待。
         </p>
       )
     }
-  </Main>
+  </main>
 
   <Footer />
 </Layout>
+
+<style is:global>
+  /* 朋友圈“全文”折叠：正文超过 8 行时渐变 + 展开按钮 */
+  .mom-body.mom-collapsed {
+    max-height: calc(8 * 1.75rem);
+    overflow: hidden;
+    position: relative;
+  }
+  .mom-body.mom-collapsed::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 3.5rem;
+    background: linear-gradient(transparent, var(--color-background));
+    pointer-events: none;
+  }
+  .mom-more-btn {
+    display: none;
+    color: var(--color-muted-foreground);
+    font-size: 0.8125rem;
+  }
+  .mom-more-btn.mom-visible {
+    display: inline-block;
+  }
+  .mom-more-btn:hover {
+    color: var(--color-accent);
+  }
+</style>
+
+<script is:inline data-astro-rerun>
+  // 长文折叠为“全文 / 收起”（像朋友圈）
+  function initMomentsFold() {
+    const bodies = Array.from(document.querySelectorAll(".mom-body"));
+    for (const body of bodies) {
+      // 超过 8 行（约 240px）才折叠
+      if (body.scrollHeight <= 240) continue;
+      body.classList.add("mom-collapsed");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "mom-more-btn mom-visible mt-1";
+      btn.textContent = "全文";
+      body.insertAdjacentElement("afterend", btn);
+      btn.addEventListener("click", () => {
+        const collapsed = body.classList.toggle("mom-collapsed");
+        btn.textContent = collapsed ? "全文" : "收起";
+      });
+    }
+  }
+  initMomentsFold();
+
+  // 点赞：空心 ↔ 实心红心
+  function initMomentsLike() {
+    const likes = Array.from(document.querySelectorAll(".mom-like"));
+    for (const btn of likes) {
+      const svg = btn.querySelector("svg");
+      const count = btn.querySelector(".mom-like-count");
+      btn.addEventListener("click", () => {
+        const liked = btn.classList.toggle("mom-liked");
+        if (liked) {
+          btn.classList.remove("text-muted-foreground");
+          btn.classList.add("text-red-500");
+          svg?.setAttribute("fill", "currentColor");
+          const cur = parseInt(count?.textContent ?? "0", 10) || 0;
+          if (count) count.textContent = String(cur + 1);
+        } else {
+          btn.classList.add("text-muted-foreground");
+          btn.classList.remove("text-red-500");
+          svg?.setAttribute("fill", "none");
+          const cur = parseInt(count?.textContent ?? "0", 10) || 0;
+          if (count && cur > 0) count.textContent = String(cur - 1);
+        }
+      });
+    }
+  }
+  initMomentsLike();
+</script>

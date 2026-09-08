@@ -5,6 +5,8 @@ station: 24
 destination: 大连
 region: 辽宁
 description: 这个地方，在主宇宙 42 被叫做大连。
+images:
+  - "/trips/dalian-1.svg"
 ---
 
 这个地方，在主宇宙 42 被叫做 大连😈👿
