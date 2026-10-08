@@ -43,24 +43,28 @@ const gridCols = (n: number) =>
 
   <main id="main-content" class="app-layout pb-16" data-pagefind-body>
     <div
-      class="mx-auto mt-8 w-full max-w-xl overflow-hidden rounded-2xl border border-border bg-background shadow-xs"
+      class="border-border bg-background mx-auto mt-8 w-full max-w-xl overflow-hidden rounded-2xl border shadow-xs"
     >
       {/* ── 相册封面横幅 ── */}
-      <div class="relative h-48 select-none overflow-hidden sm:h-56">
+      <div class="relative h-48 overflow-hidden select-none sm:h-56">
         <div
           class="absolute inset-0"
           style="background: linear-gradient(130deg,#1e3a8a 0%,#0ea5e9 45%,#f472b6 100%)"
-        />
+        >
+        </div>
         <div
           aria-hidden="true"
           class="absolute inset-0 opacity-30"
           style="background-image: radial-gradient(circle at 20% 30%, #fff 0 2px, transparent 2.5px), radial-gradient(circle at 75% 60%, #fff 0 2px, transparent 2.5px), radial-gradient(circle at 45% 85%, #fff 0 1.5px, transparent 2px); background-size: 130px 130px, 100px 100px, 150px 150px;"
-        />
-        <div class="absolute right-5 bottom-4 left-5 flex items-end justify-between gap-3">
-          <p class="text-white text-lg font-semibold drop-shadow-sm">
+        >
+        </div>
+        <div
+          class="absolute right-5 bottom-4 left-5 flex items-end justify-between gap-3"
+        >
+          <p class="text-lg font-semibold text-white drop-shadow-sm">
             {config.site.author} 的旅行朋友圈
           </p>
-          <p class="text-white/85 text-xs whitespace-nowrap">
+          <p class="text-xs whitespace-nowrap text-white/85">
             {posts.length} 条动态
           </p>
         </div>
@@ -74,7 +78,7 @@ const gridCols = (n: number) =>
               {/* 头像 */}
               <div
                 aria-hidden="true"
-                class="text-white grid size-10 shrink-0 place-items-center rounded-lg text-lg font-bold"
+                class="grid size-10 shrink-0 place-items-center rounded-lg text-lg font-bold text-white"
                 style="background: linear-gradient(135deg,#0ea5e9,#7c3aed)"
               >
                 {config.site.author.slice(0, 1).toUpperCase()}
@@ -86,15 +90,13 @@ const gridCols = (n: number) =>
                   <p class="text-[15px] font-semibold break-all">
                     {config.site.author}
                   </p>
-                  {
-                    post.data.series && (
-                      <span class="text-muted-foreground text-xs">
-                        {SERIES_EMOJI[post.data.series] ?? "🧳"}
-                        {post.data.series}
-                        {post.data.station && ` · 第 ${post.data.station} 站`}
-                      </span>
-                    )
-                  }
+                  {post.data.series && (
+                    <span class="text-muted-foreground text-xs">
+                      {SERIES_EMOJI[post.data.series] ?? "🧳"}
+                      {post.data.series}
+                      {post.data.station && ` · 第 ${post.data.station} 站`}
+                    </span>
+                  )}
                 </div>
 
                 {/* 正文 */}
@@ -108,34 +110,32 @@ const gridCols = (n: number) =>
                 </div>
 
                 {/* 图片九宫格 */}
-                {
-                  post.data.images && post.data.images.length > 0 && (
-                    post.data.images.length === 1 ? (
-                      <img
-                        src={post.data.images[0]}
-                        alt=""
-                        loading="lazy"
-                        class="mt-2.5 aspect-square w-[55%] rounded-lg object-cover"
-                      />
-                    ) : (
-                      <div
-                        class:list={[
-                          "mt-2.5 grid gap-1.5",
-                          gridCols(post.data.images.length),
-                        ]}
-                      >
-                        {post.data.images.map(src => (
-                          <img
-                            src={src}
-                            alt=""
-                            loading="lazy"
-                            class="aspect-square w-full rounded-lg object-cover"
-                          />
-                        ))}
-                      </div>
-                    )
-                  )
-                }
+                {post.data.images &&
+                  post.data.images.length > 0 &&
+                  (post.data.images.length === 1 ? (
+                    <img
+                      src={post.data.images[0]}
+                      alt=""
+                      loading="lazy"
+                      class="mt-2.5 aspect-square w-[55%] rounded-lg object-cover"
+                    />
+                  ) : (
+                    <div
+                      class:list={[
+                        "mt-2.5 grid gap-1.5",
+                        gridCols(post.data.images.length),
+                      ]}
+                    >
+                      {post.data.images.map(src => (
+                        <img
+                          src={src}
+                          alt=""
+                          loading="lazy"
+                          class="aspect-square w-full rounded-lg object-cover"
+                        />
+                      ))}
+                    </div>
+                  ))}
 
                 {/* 底部信息行：地点时间（左）· 点赞（右） */}
                 <div class="mt-2.5 flex items-center justify-between gap-3">
@@ -164,7 +164,7 @@ const gridCols = (n: number) =>
                         d="M21 8.4c0 4.4-9 12.6-9 12.6S3 12.8 3 8.4A4.9 4.9 0 0 1 7.9 3.5 5.4 5.4 0 0 1 12 5.6a5.4 5.4 0 0 1 4.1-2.1A4.9 4.9 0 0 1 21 8.4Z"
                       />
                     </svg>
-                    <span class="mom-like-count"></span>
+                    <span class="mom-like-count" />
                   </button>
                 </div>
               </div>
