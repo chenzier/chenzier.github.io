@@ -1,0 +1,80 @@
+---
+import { Image } from "astro:assets";
+import type { FeedNote } from "@/utils/getNotes";
+
+type Props = {
+  note: FeedNote;
+  /** Label for long-form cards, e.g. “长文”. */
+  kindLabel?: string;
+};
+
+const { note, kindLabel } = Astro.props;
+
+const badge = note.kind === "post" ? kindLabel : note.series;
+const hasMeta = Boolean(note.metaLeft || note.metaRight);
+---
+
+{
+  /*
+  Xiaohongshu note card: white surface, 10px radius, 3:4 cover, two-line title,
+  then a small metadata row — the same anatomy as a note in a XHS profile grid.
+*/
+}
+<article class="break-inside-avoid">
+  <a
+    href={note.url}
+    class="group bg-home-card block overflow-hidden rounded-[10px] transition duration-300 hover:-translate-y-1 hover:no-underline focus-visible:no-underline"
+  >
+    <div class="bg-home-page aspect-[3/4] overflow-hidden">
+      {
+        note.cover?.kind === "asset" ? (
+          <Image
+            src={note.cover.src}
+            alt={note.title}
+            width={640}
+            height={854}
+            class="size-full object-cover transition duration-500 group-hover:scale-[1.035]"
+          />
+        ) : note.cover?.kind === "public" ? (
+          <img
+            src={note.cover.src}
+            alt={note.title}
+            width={600}
+            height={800}
+            loading="lazy"
+            decoding="async"
+            class="size-full object-cover transition duration-500 group-hover:scale-[1.035]"
+          />
+        ) : (
+          /* Fallback for notes without any image: a text cover in XHS note
+             proportions. Flat brand tint, no gradient. */
+          <div class="flex size-full flex-col p-4">
+            {badge && (
+              <span class="text-home-brand text-xs font-semibold">{badge}</span>
+            )}
+            <p class="text-home-ink mt-auto line-clamp-5 text-2xl leading-snug font-bold">
+              {note.title}
+            </p>
+          </div>
+        )
+      }
+    </div>
+
+    <div class="px-3 py-3 sm:px-4 sm:py-4">
+      <h3
+        class="text-home-ink line-clamp-2 text-[15px] leading-[1.5] font-semibold sm:text-base"
+      >
+        {note.title}
+      </h3>
+
+      {
+        hasMeta && (
+          <div class="text-home-ink-muted mt-2 flex items-center justify-between gap-2 text-xs">
+            <span class="truncate">{note.metaLeft}</span>
+            {note.metaRight && <span class="shrink-0">{note.metaRight}</span>}
+          </div>
+        )
+      }
+    </div>
+  </a>
+</article>

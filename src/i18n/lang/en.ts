@@ -36,8 +36,13 @@ export default {
   home: {
     socialLinks: "Social Links",
     featured: "Featured",
-    recentPosts: "Recent Posts",
+    recentPosts: "Recent Notes",
     allPosts: "All Posts",
+    notes: "Notes",
+    longform: "Essays",
+    words: "chars",
+    subscribe: "Subscribe",
+    statement: "Code, and the road beyond.",
   },
   footer: {
     copyright: "Copyright",
@@ -60,7 +65,12 @@ export default {
     searchDesc: "Search any article ...",
 
     tripsTitle: "Trips",
-    tripsDesc: "Travel notes, moments-style.",
+    tripsDesc: "Places I walked, written as notes.",
+    tripsEmpty: "Trip notes are still on the road.",
+  },
+  trips: {
+    station: "Stop {{n}}",
+    photoCount: "{{n}} photos",
   },
   a11y: {
     skipToContent: "Skip to content",

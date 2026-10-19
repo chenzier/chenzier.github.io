@@ -36,6 +36,12 @@ export interface UIStrings {
     featured: string;
     recentPosts: string;
     allPosts: string;
+    /** Feed/profile counters on the home page. */
+    notes: string;
+    longform: string;
+    words: string;
+    subscribe: string;
+    statement: string;
   };
   footer: {
     copyright: string;
@@ -59,6 +65,13 @@ export interface UIStrings {
 
     tripsTitle: string;
     tripsDesc: string;
+    tripsEmpty: string;
+  };
+  trips: {
+    /** `{{n}}` is the station number. */
+    station: string;
+    /** `{{n}}` is the number of images in the note. */
+    photoCount: string;
   };
   a11y: {
     skipToContent: string;

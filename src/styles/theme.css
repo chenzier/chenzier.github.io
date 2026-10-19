@@ -8,6 +8,14 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --font-app: var(--font-ui);
+  /* Home note feed surface (Xiaohongshu chrome), see .tastemaker/style-lock.md */
+  --color-home-page: var(--home-page);
+  --color-home-card: var(--home-card);
+  --color-home-ink: var(--home-ink);
+  --color-home-ink-muted: var(--home-ink-muted);
+  --color-home-line: var(--home-line);
+  --color-home-brand: var(--home-brand);
+  --color-home-brand-text: var(--home-brand-text);
 }
 
 /* Light theme values */
@@ -23,6 +31,16 @@
   --font-ui:
     Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
     "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+
+  /* Home feed: page vs card separation + the brand red, values taken from the
+     Xiaohongshu clone's theme tokens (see docs/research report). */
+  --home-page: #f7f7f7;
+  --home-card: #ffffff;
+  --home-ink: #333333;
+  --home-ink-muted: #6b6b6b;
+  --home-line: #ebebeb;
+  --home-brand: #ff2442;
+  --home-brand-text: #b71936;
 }
 
 /* Dark theme values */
@@ -37,4 +55,12 @@
   --font-ui:
     Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
     "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+
+  --home-page: #121212;
+  --home-card: #1e1e1e;
+  --home-ink: #e0e0e0;
+  --home-ink-muted: #909090;
+  --home-line: #303030;
+  --home-brand: #ff2442;
+  --home-brand-text: #ff6379;
 }

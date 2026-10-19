@@ -1,28 +1,28 @@
 ---
-import { getCollection } from "astro:content";
 import { getRelativeLocaleUrl } from "astro:i18n";
-import IconRss from "@/assets/icons/IconRss.svg";
 import IconArrowRight from "@/assets/icons/IconArrowRight.svg";
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
-import Socials from "@/components/Socials.astro";
-import Card from "@/components/Card.astro";
-import LinkButton from "@/components/LinkButton.astro";
-import { getSortedPosts } from "@/utils/getSortedPosts";
+import FeaturedNote from "@/components/feed/FeaturedNote.astro";
+import NoteFeed from "@/components/feed/NoteFeed.astro";
+import ProfileHeader from "@/components/feed/ProfileHeader.astro";
+import { getFeedStats, getNotes } from "@/utils/getNotes";
 import { useTranslations } from "@/i18n";
 import config from "@/config";
-
-const { socials, posts: postsConfig } = config;
 
 const locale = Astro.currentLocale ?? config.site.lang;
 const t = useTranslations(locale);
 
-const posts = await getCollection("posts");
-const sortedPosts = getSortedPosts(posts);
-const featuredPosts = sortedPosts.filter(({ data }) => data.featured);
-const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
+const [notes, stats] = await Promise.all([getNotes(locale), getFeedStats()]);
+const [featuredNote, ...remainingNotes] = notes;
 const homePath = getRelativeLocaleUrl(locale, "");
+
+const tabs = [
+  { href: homePath, label: t.home.notes, current: true },
+  { href: getRelativeLocaleUrl(locale, "posts"), label: t.home.longform },
+  { href: getRelativeLocaleUrl(locale, "trips"), label: t.nav.trips },
+];
 ---
 
 <Layout>
@@ -30,95 +30,52 @@ const homePath = getRelativeLocaleUrl(locale, "");
   <main
     id="main-content"
     data-layout="index"
+    data-surface="feed"
     data-home-path={homePath}
-    class="app-layout my-1"
+    class="feed-layout pb-20"
   >
-    <section id="hero" class="border-border border-b pt-8 pb-6">
-      <h1 class="my-4 inline-block text-4xl font-bold sm:my-8 sm:text-5xl">
-        Mingalaba
-      </h1>
-      <a
-        target="_blank"
-        href={`${import.meta.env.BASE_URL.replace(/\/?$/, "/")}rss.xml`}
-        class="inline-block"
-        aria-label="RSS Feed"
-        title="RSS Feed"
-      >
-        <IconRss
-          width={20}
-          height={20}
-          class="stroke-accent scale-125 stroke-3 rtl:-rotate-90"
-        />
-        <span class="sr-only">RSS Feed</span>
-      </a>
-
-      <p>
-        说唱、旅行、读书，以及开发程序。这里记录真实的使用体验、思考和
-        一些正在变成作品的尝试。
-      </p>
-      <p class="mt-2">
-        从最近的文章开始，或者在{" "}
-        <LinkButton
-          class="hover:text-accent underline decoration-dashed underline-offset-4"
-          href={getRelativeLocaleUrl(locale, "archives")}
-        >
-          归档
-        </LinkButton>{" "}
-        里慢慢逛。
-      </p>
-      {
-        socials.length > 0 && (
-          <div class="mt-4 flex max-sm:flex-col sm:items-center">
-            <div class="me-2 mb-1 whitespace-nowrap sm:mb-0">
-              {t.home.socialLinks}:
-            </div>
-            <Socials />
-          </div>
-        )
-      }
+    <section
+      class:list={["home-cover", { "home-cover--solo": !featuredNote }]}
+      aria-label={t.home.featured}
+    >
+      <ProfileHeader stats={stats} />
+      {featuredNote && <FeaturedNote note={featuredNote} />}
     </section>
 
-    {
-      featuredPosts.length > 0 && (
-        <section
-          id="featured"
-          class:list={[
-            "pt-12 pb-6",
-            { "border-border border-b": recentPosts.length > 0 },
-          ]}
-        >
-          <h2 class="text-2xl font-semibold tracking-wide">
-            {t.home.featured}
-          </h2>
-          <ul>
-            {featuredPosts.map(data => (
-              <Card variant="h3" {...data} />
-            ))}
-          </ul>
-        </section>
-      )
-    }
+    <div class="home-index-heading">
+      <div>
+        <p class="home-index-heading__number">
+          02 <span aria-hidden="true">/</span> FIELD NOTES
+        </p>
+        <h2>{t.home.recentPosts}</h2>
+      </div>
+      <nav aria-label={t.home.notes} class="home-index-heading__tabs">
+        {
+          tabs.map(({ href, label, current }) => (
+            <a
+              href={href}
+              aria-current={current ? "page" : undefined}
+              class:list={[
+                "home-index-heading__tab",
+                { "home-index-heading__tab--current": current },
+              ]}
+            >
+              {label}
+            </a>
+          ))
+        }
+      </nav>
+    </div>
 
-    {
-      recentPosts.length > 0 && (
-        <section id="recent-posts" class="pt-12 pb-6">
-          <h2 class="text-2xl font-semibold tracking-wide">
-            {t.home.recentPosts}
-          </h2>
-          <ul>
-            {recentPosts.slice(0, postsConfig.perIndex).map(data => (
-              <Card variant="h3" {...data} />
-            ))}
-          </ul>
-        </section>
-      )
-    }
+    <section id="notes" class="mt-7 sm:mt-10" aria-label={t.home.notes}>
+      <NoteFeed notes={remainingNotes} kindLabel={t.home.longform} />
+    </section>
 
-    <div class="my-8 text-center">
-      <LinkButton href={getRelativeLocaleUrl(locale, "posts")}>
+    <div class="home-more">
+      <a href={getRelativeLocaleUrl(locale, "posts")}>
         {t.home.allPosts}
-        <IconArrowRight class="inline-block rtl:-rotate-180" />
-      </LinkButton>
+        <IconArrowRight class="size-5 rtl:-rotate-180" />
+      </a>
     </div>
   </main>
   <Footer />
@@ -134,3 +91,94 @@ const homePath = getRelativeLocaleUrl(locale, "");
     }
   });
 </script>
+
+<style>
+  .home-cover {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    min-height: 39rem;
+    margin-top: 1.5rem;
+    background: #20211f;
+  }
+  .home-cover--solo {
+    grid-template-columns: 1fr;
+  }
+  .home-index-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-top: clamp(4rem, 8vw, 7rem);
+    border-top: 2px solid var(--home-ink);
+    padding-top: 1.4rem;
+  }
+  .home-index-heading__number {
+    color: var(--home-ink-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+  }
+  .home-index-heading__number span {
+    color: var(--home-brand-text);
+    padding-inline: 0.35rem;
+  }
+  .home-index-heading h2 {
+    margin-top: 1rem;
+    color: var(--home-ink);
+    font-family: "Songti SC", "Noto Serif CJK SC", "STSong", serif;
+    font-size: clamp(2.2rem, 4.5vw, 4rem);
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .home-index-heading__tabs {
+    display: flex;
+    gap: 1.5rem;
+    border-bottom: 1px solid var(--home-line);
+  }
+  .home-index-heading__tab {
+    margin-bottom: -1px;
+    border-bottom: 2px solid transparent;
+    padding-bottom: 0.6rem;
+    color: var(--home-ink-muted);
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+  .home-index-heading__tab:hover,
+  .home-index-heading__tab--current {
+    color: var(--home-ink);
+    text-decoration: none;
+  }
+  .home-index-heading__tab--current {
+    border-color: var(--home-brand);
+    font-weight: 700;
+  }
+  .home-more {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 3rem;
+    border-top: 1px solid var(--home-line);
+    padding-top: 1.25rem;
+  }
+  .home-more a {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--home-ink);
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+  .home-more a:hover {
+    color: var(--home-brand-text);
+  }
+  @media (max-width: 767px) {
+    .home-cover {
+      grid-template-columns: 1fr;
+      margin-top: 1rem;
+    }
+    .home-index-heading {
+      align-items: start;
+      flex-direction: column;
+      gap: 2rem;
+    }
+  }
+</style>

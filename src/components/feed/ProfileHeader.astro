@@ -1,0 +1,169 @@
+---
+import { getRelativeLocaleUrl } from "astro:i18n";
+import IconRss from "@/assets/icons/IconRss.svg";
+import config from "@/config";
+import { useTranslations } from "@/i18n";
+
+type Props = {
+  stats: {
+    notes: number;
+    longform: number;
+    tags: number;
+    words: number;
+  };
+};
+
+const { stats } = Astro.props;
+const locale = Astro.currentLocale ?? config.site.lang;
+const t = useTranslations(locale);
+const rssHref = getRelativeLocaleUrl(locale, "rss.xml");
+const numberFormat = new Intl.NumberFormat(locale);
+
+const items = [
+  { value: numberFormat.format(stats.notes), label: t.home.notes },
+  { value: numberFormat.format(stats.longform), label: t.home.longform },
+  { value: numberFormat.format(stats.tags), label: t.nav.tags },
+  { value: numberFormat.format(stats.words), label: t.home.words },
+];
+---
+
+<header class="cover-intro">
+  <div class="cover-intro__edition">
+    <span>CHENZIER / PERSONAL JOURNAL</span>
+    <span>001 — {t.nav.home}</span>
+  </div>
+
+  <div class="cover-intro__body">
+    <h1>{config.site.author}<span aria-hidden="true">.</span></h1>
+    <p class="cover-intro__statement">{t.home.statement}</p>
+    <p class="cover-intro__description">{config.site.description}</p>
+  </div>
+
+  <div class="cover-intro__bottom">
+    <dl class="cover-intro__stats">
+      {
+        items.map(({ value, label }) => (
+          <div>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <div class="cover-intro__links">
+      <a href={config.site.profile} target="_blank" rel="noopener noreferrer">
+        GitHub ↗
+      </a>
+      <a href={rssHref} target="_blank" rel="noopener noreferrer">
+        <IconRss width={15} height={15} aria-hidden="true" />
+        {t.home.subscribe} ↗
+      </a>
+    </div>
+  </div>
+</header>
+
+<style>
+  .cover-intro {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: clamp(1.5rem, 3.5vw, 3rem);
+    color: #f7f4ee;
+  }
+  .cover-intro__edition {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    color: #b8b5ae;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+  .cover-intro__body {
+    padding-block: 2rem;
+  }
+  h1 {
+    margin: 0 0 1.75rem -0.06em;
+    font-size: clamp(4rem, 7.1vw, 7rem);
+    font-weight: 800;
+    letter-spacing: -0.09em;
+    line-height: 0.9;
+  }
+  h1 span {
+    color: #ff4b62;
+  }
+  .cover-intro__statement {
+    max-width: 9em;
+    margin: 0;
+    font-family: "Songti SC", "Noto Serif CJK SC", "STSong", serif;
+    font-size: clamp(2rem, 3.3vw, 3.25rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1.32;
+    white-space: pre-line;
+  }
+  .cover-intro__description {
+    margin-top: 1.2rem;
+    color: #b8b5ae;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+  }
+  .cover-intro__bottom {
+    border-top: 1px solid #55534f;
+    padding-top: 1.15rem;
+  }
+  .cover-intro__stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+  .cover-intro__stats div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .cover-intro__stats dt {
+    order: 1;
+    color: #b8b5ae;
+    font-size: 0.7rem;
+  }
+  .cover-intro__stats dd {
+    font-size: clamp(1rem, 1.6vw, 1.3rem);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .cover-intro__links {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .cover-intro__links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: #f7f4ee;
+    text-decoration: underline;
+    text-decoration-color: #76716c;
+    text-underline-offset: 0.3rem;
+  }
+  .cover-intro__links a:hover {
+    color: #ff7081;
+  }
+  .cover-intro__links a:focus-visible {
+    outline-color: #ff7081;
+  }
+  @media (max-width: 767px) {
+    h1 {
+      font-size: clamp(3.9rem, 15vw, 7rem);
+    }
+    .cover-intro__body {
+      padding-block: 3rem 3.5rem;
+    }
+    .cover-intro__statement {
+      font-size: clamp(2.2rem, 9vw, 3.5rem);
+    }
+  }
+</style>

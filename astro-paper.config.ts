@@ -3,7 +3,7 @@ import { defineAstroPaperConfig } from "./src/types/config";
 export default defineAstroPaperConfig({
   site: {
     url: "https://chenzier.github.io/",
-    title: "我的博客",
+    title: "chenzier",
     description: "说唱 · 旅行 · 读书 · 开发程序",
     author: "chenzier",
     profile: "https://github.com/chenzier",

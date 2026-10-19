@@ -1,0 +1,175 @@
+---
+import { type CollectionEntry, getCollection, render } from "astro:content";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+import { getAssetPath } from "@/utils/withBase";
+import { tplStr, useTranslations } from "@/i18n";
+import config from "@/config";
+
+export async function getStaticPaths() {
+  // Same order as the trip list: undated journals first, then station desc.
+  // (Declared inline: Astro drops local frontmatter helpers from the
+  // prerendered getStaticPaths chunk.)
+  const sorted = (await getCollection("trips"))
+    .filter(trip => !trip.data.draft)
+    .sort((a, b) => {
+      const aStation = a.data.station;
+      const bStation = b.data.station;
+      if (aStation === undefined && bStation === undefined) return 0;
+      if (aStation === undefined) return -1;
+      if (bStation === undefined) return 1;
+      return bStation - aStation;
+    });
+
+  return sorted.map((trip, index) => ({
+    params: { slug: trip.id },
+    props: {
+      trip,
+      newerTrip: sorted[index - 1]
+        ? { id: sorted[index - 1].id, title: sorted[index - 1].data.title }
+        : null,
+      older: sorted[index + 1]
+        ? { id: sorted[index + 1].id, title: sorted[index + 1].data.title }
+        : null,
+    },
+  }));
+}
+
+type Props = {
+  trip: CollectionEntry<"trips">;
+  newerTrip: { id: string; title: string } | null;
+  older: { id: string; title: string } | null;
+};
+
+const { trip, newerTrip, older } = Astro.props;
+const locale = Astro.currentLocale ?? config.site.lang;
+const t = useTranslations(locale);
+
+const { Content } = await render(trip);
+const { title, description, series, station, destination, region, images } =
+  trip.data;
+
+const photos = (images ?? []).map(src => getAssetPath(src));
+const tripsUrl = getRelativeLocaleUrl(locale, "trips");
+const place = [region, destination].filter(Boolean).join(" · ");
+const topics = [series, destination, region].filter((value): value is string =>
+  Boolean(value)
+);
+---
+
+<Layout
+  title={`${title} | ${config.site.title}`}
+  description={description}
+  ogImage={photos[0]}
+>
+  <Header />
+
+  <main id="main-content" data-surface="feed" class="feed-layout pb-16">
+    <div class="mx-auto max-w-2xl pt-6 sm:pt-8">
+      <a
+        href={tripsUrl}
+        class="text-home-ink-muted hover:text-home-brand text-sm transition focus-visible:no-underline"
+      >
+        ← {t.nav.trips}
+      </a>
+
+      <article
+        class="bg-home-card mt-4 rounded-[10px] p-4 sm:p-6"
+        data-pagefind-body
+      >
+        {
+          /* Scroll-snap carousel, the same gesture as a Xiaohongshu note with
+             more than one image — no runtime JS. */
+          photos.length > 0 && (
+            <div class="flex snap-x snap-mandatory gap-2 overflow-x-auto rounded-[10px]">
+              {photos.map(src => (
+                <img
+                  src={src}
+                  alt=""
+                  width={600}
+                  height={600}
+                  loading="lazy"
+                  decoding="async"
+                  class="bg-home-page aspect-square w-full shrink-0 snap-center rounded-[8px] object-cover"
+                />
+              ))}
+            </div>
+          )
+        }
+
+        <h1
+          class="text-home-ink mt-5 text-xl leading-snug font-bold sm:text-2xl"
+        >
+          {title}
+        </h1>
+
+        <div
+          class="text-home-ink-muted mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs"
+        >
+          {series && <span>{series}</span>}
+          {
+            station !== undefined && (
+              <span>{tplStr(t.trips.station, { n: station })}</span>
+            )
+          }
+          {place && <span>{place}</span>}
+          {
+            photos.length > 1 && (
+              <span class="ms-auto">
+                {tplStr(t.trips.photoCount, { n: photos.length })}
+              </span>
+            )
+          }
+        </div>
+
+        <div class="app-prose mt-5">
+          <Content />
+        </div>
+
+        {
+          topics.length > 0 && (
+            <ul class="mt-6 flex flex-wrap gap-2">
+              {topics.map(topic => (
+                <li class="text-home-brand bg-home-brand/10 rounded-full px-2.5 py-1 text-xs">
+                  #{topic}
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </article>
+
+      <nav
+        aria-label={t.nav.trips}
+        class="text-home-ink-muted mt-6 flex justify-between gap-4 text-sm"
+      >
+        {
+          older ? (
+            <a
+              href={`${tripsUrl}${older.id}/`}
+              class="hover:text-home-brand max-w-[45%] truncate focus-visible:no-underline"
+            >
+              ← {older.title}
+            </a>
+          ) : (
+            <span />
+          )
+        }
+        {
+          newerTrip && (
+            <a
+              href={`${tripsUrl}${newerTrip.id}/`}
+              class="hover:text-home-brand max-w-[45%] truncate text-end focus-visible:no-underline"
+            >
+              {newerTrip.title} →
+            </a>
+          )
+        }
+      </nav>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>

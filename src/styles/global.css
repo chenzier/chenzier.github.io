@@ -30,6 +30,26 @@
   @apply max-w-app mx-auto w-full px-4;
 }
 
+/* Note feed (home + trips): wider than the reading column so 3 cards fit. */
+@utility feed-layout {
+  @apply mx-auto w-full max-w-5xl px-4;
+}
+
+/* Feed pages share a wider, uninterrupted canvas with their navigation. */
+body:has(#main-content[data-surface="feed"]) {
+  background-color: var(--home-page);
+}
+
+body:has(#main-content[data-surface="feed"]) > header.app-layout,
+body:has(#main-content[data-surface="feed"]) > footer.app-layout {
+  max-width: 64rem;
+}
+
+body:has(#main-content[data-surface="feed"]) > header.app-layout > div {
+  background-color: var(--home-page);
+  border-color: var(--home-line);
+}
+
 @utility active-nav {
   @apply underline decoration-wavy decoration-2 underline-offset-8;
 }

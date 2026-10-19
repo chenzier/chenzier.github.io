@@ -1,0 +1,142 @@
+---
+import { Image } from "astro:assets";
+import type { FeedNote } from "@/utils/getNotes";
+import { useTranslations } from "@/i18n";
+
+type Props = { note: FeedNote };
+const { note } = Astro.props;
+const t = useTranslations(Astro.currentLocale);
+---
+
+<a href={note.url} class="featured-note">
+  <div class="featured-note__image">
+    {
+      note.cover?.kind === "asset" ? (
+        <Image
+          src={note.cover.src}
+          alt=""
+          width={1000}
+          height={900}
+          class="featured-note__photo"
+        />
+      ) : note.cover?.kind === "public" ? (
+        <img
+          src={note.cover.src}
+          alt=""
+          width="1000"
+          height="900"
+          class="featured-note__photo"
+        />
+      ) : (
+        <div class="featured-note__fallback" aria-hidden="true">
+          {note.title}
+        </div>
+      )
+    }
+    <span class="featured-note__label">01 / {t.home.featured}</span>
+  </div>
+  <div class="featured-note__caption">
+    <div>
+      <span class="featured-note__eyebrow"
+        >{note.metaLeft ?? t.home.longform}</span
+      >
+      <h2>{note.title}</h2>
+    </div>
+    <span class="featured-note__arrow" aria-hidden="true">↗</span>
+  </div>
+</a>
+
+<style>
+  .featured-note {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    color: #f7f4ee;
+  }
+  .featured-note:hover {
+    text-decoration: none;
+  }
+  .featured-note:focus-visible {
+    outline: 2px solid #ff7081;
+    outline-offset: 3px;
+  }
+  .featured-note__image {
+    position: relative;
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
+    background: #343436;
+  }
+  .featured-note__photo,
+  .featured-note__fallback {
+    width: 100%;
+    height: 100%;
+    min-height: 26rem;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 500ms ease;
+  }
+  .featured-note:hover .featured-note__photo {
+    transform: scale(1.035);
+  }
+  .featured-note__fallback {
+    display: grid;
+    place-items: center;
+    padding: 3rem;
+    font-size: 2rem;
+    font-weight: 700;
+  }
+  .featured-note__label {
+    position: absolute;
+    top: 1.25rem;
+    left: 1.25rem;
+    background: #d71c3d;
+    padding: 0.5rem 0.7rem;
+    color: white;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+  .featured-note__caption {
+    display: flex;
+    justify-content: space-between;
+    gap: 1.5rem;
+    border-top: 1px solid #55534f;
+    padding: 1.3rem 1.5rem 1.5rem;
+  }
+  .featured-note__eyebrow {
+    color: #b8b5ae;
+    font-size: 0.7rem;
+  }
+  h2 {
+    margin-top: 0.35rem;
+    font-size: clamp(1.15rem, 1.8vw, 1.6rem);
+    font-weight: 650;
+    line-height: 1.35;
+  }
+  .featured-note__arrow {
+    flex: none;
+    font-size: 1.8rem;
+    line-height: 1;
+    transition: transform 200ms ease;
+  }
+  .featured-note:hover .featured-note__arrow {
+    transform: translate(0.2rem, -0.2rem);
+  }
+  @media (max-width: 767px) {
+    .featured-note__image {
+      height: 17rem;
+      flex: none;
+    }
+    .featured-note__photo,
+    .featured-note__fallback {
+      min-height: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .featured-note__photo,
+    .featured-note__arrow {
+      transition: none;
+    }
+  }
+</style>

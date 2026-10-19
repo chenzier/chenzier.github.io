@@ -36,8 +36,13 @@ export default {
   home: {
     socialLinks: "社交链接",
     featured: "精选",
-    recentPosts: "最近文章",
+    recentPosts: "最近记录",
     allPosts: "全部文章",
+    notes: "笔记",
+    longform: "长文",
+    words: "字",
+    subscribe: "订阅",
+    statement: "写程序，\n也写路上。",
   },
   footer: {
     copyright: "版权所有",
@@ -60,7 +65,12 @@ export default {
     searchDesc: "搜索任意文章…",
 
     tripsTitle: "游记",
-    tripsDesc: "把走过的路，写成朋友圈。",
+    tripsDesc: "把走过的路，写成笔记。",
+    tripsEmpty: "游记还在路上，敬请期待。",
+  },
+  trips: {
+    station: "第 {{n}} 站",
+    photoCount: "{{n}} 张图片",
   },
   a11y: {
     skipToContent: "跳到主要内容",
